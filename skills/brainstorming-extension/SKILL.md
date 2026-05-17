@@ -83,11 +83,34 @@ The `/start-task` command's Problem Definition Phase includes an explicit "MANDA
 
 When this skill is loaded (either by name or auto-activation), it provides the detailed procedure below.
 
+### CRITICAL: Auto-Chain Behavior Limitation
+
+`superpowers:brainstorming` has a **built-in terminal state** that says:
+> "The ONLY skill you invoke after brainstorming is writing-plans"
+
+This means after it commits a design doc, it **automatically continues to `writing-plans`** before control returns to the parent workflow. This bypasses all enforcement mechanisms.
+
+**The fix**: When invoking `superpowers:brainstorming` from start-task, you MUST:
+1. Explicitly instruct it to **stop after the design doc and return control**
+2. Add to your prompt: "After completing the design doc, stop and return control to the parent workflow. Do NOT auto-chain to any subsequent skill."
+3. Do NOT use the Skill tool's auto-chain behavior — treat it as a task that returns results
+
+If `superpowers:brainstorming` ignores these instructions and auto-chains, the workaround is:
+- After brainstorming returns (even if it tried to chain), **STOP** any subsequent skill
+- Re-assert control and run: GitHub Issue creation → Design Review Gate → PRD Workflow
+
 ---
 
 ## Procedure: After Brainstorming Completes
 
-When `superpowers:brainstorming` commits a design document:
+When `superpowers:brainstorming` completes (or tries to auto-chain to `writing-plans`):
+
+### Step 0: Intercept Auto-Chain (If Needed)
+
+If `superpowers:brainstorming` tries to auto-chain to `writing-plans`:
+1. **STOP** the auto-chain immediately
+2. You are now in control — do NOT let any skill auto-chain
+3. Proceed to Step 1 (Design Review Gate)
 
 ### Step 1: Announce the Gate
 

@@ -111,12 +111,18 @@ If the issue lacks DoD items or clear scope, ask the user to clarify before proc
 
 **If the problem is unclear:**
 
-- Route to `superpowers:brainstorming` first to refine the idea into a design
-- **MANDATORY HANDOFF**: After brainstorming commits a design document, you MUST:
-  1. STOP — do NOT proceed directly to `writing-plans` or implementation
-  2. Run the Design Review Gate (`/review-design` or invoke the `design-review-gate` skill)
-  3. Wait for all 5 review agents (PM, Architect, Designer, Security, CTO) to APPROVE
-  4. Only after ALL APPROVED, proceed to PRD Writing
+- Route to `superpowers:brainstorming` to refine the idea into a design
+- **IMPORTANT**: When invoking brainstorming, explicitly instruct it to:
+  - Produce a design document and **return control to this workflow**
+  - Do NOT auto-chain to `writing-plans` or any subsequent skill
+  - Example prompt addition: "After completing the design doc, stop and return control to the parent workflow. Do NOT invoke any后续 skill."
+
+- **MANDATORY HANDOFF**: After brainstorming completes and returns control, you MUST:
+  1. STOP — do NOT proceed to any subsequent skill
+  2. Create GitHub Issue to track this work
+  3. Run the Design Review Gate (`/review-design` or invoke the `design-review-gate` skill)
+  4. Wait for all 5 review agents (PM, Architect, Designer, Security, CTO) to APPROVE
+  5. Only after ALL APPROVED, proceed to PRD Writing
 
 **PRD Workflow (After Design Review Gate):**
 
