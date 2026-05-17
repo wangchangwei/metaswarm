@@ -53,38 +53,36 @@ This check is informational only. Always proceed to the task regardless of the r
 
 ### 1. Task Assessment
 
-**Use extended thinking** to analyze the task complexity before asking the user.
+**Use extended thinking** to analyze the task type and complexity before asking the user.
 
-Consider:
+Classify the task into one of these two categories:
 
-- Number of files likely to be modified
-- Whether database changes are needed
-- Impact on existing functionality
-- Testing requirements
-- Integration points
+#### Simple Task Types (Only these two go through Simple Flow):
 
-Then ask the user to confirm your assessment:
+| Type | Description | Examples |
+|------|-------------|----------|
+| **Bug Fix** | Defect in existing functionality | Crash, incorrect output, broken feature |
+| **Code Optimization** | Improve existing code quality | Refactoring, performance, readability |
 
-> **Proposed complexity**: [Simple / Complex] - Does this match your expectation?
+#### All Other Tasks → Complex Task Flow
 
-**Simple Task (streamlined flow):**
-
-- Bug fixes
-- Small UI tweaks
-- Minor text/copy changes
-- Simple configuration updates
-- Adding basic validation
-- Fixing linting/test issues
-
-**Complex Task (full checklist + BEADS epic):**
-
-- New features with database changes
+- New features
 - New API endpoints
-- Complex UI components
-- Background job modifications
-- Onboarding flow changes
-- Multi-file refactoring
-- Performance optimizations
+- Database schema changes
+- UI/UX changes
+- New integrations
+- Any task requiring new test coverage
+- Multi-file changes
+
+---
+
+**Ask the user to confirm:**
+
+> **Proposed task type**: [Bug Fix / Code Optimization / Complex Task]
+
+If the user says "Complex" or the task involves new functionality → go to Complex Task Flow.
+
+If the user says "Bug Fix" or "Code Optimization" → go to Simple Task Flow.
 
 ### 1.5. Problem Definition Phase
 
@@ -186,9 +184,9 @@ After Design Review Gate approves, follow this sequence before implementation:
 - [ ] File scope (which files will be affected)
 - [ ] Human checkpoints (where to pause for review)
 
-### 2. Simple Task Flow
+### 2. Simple Task Flow (Bug Fix / Code Optimization)
 
-If user confirms it's a simple task:
+If user confirms it's a Bug Fix or Code Optimization:
 
 #### Essential Steps
 
@@ -197,21 +195,35 @@ If user confirms it's a simple task:
    gh issue create --title "<task-title>" --body "## Task Description\n<description>\n\n## Acceptance Criteria\n- [ ] Criteria 1\n- [ ] Criteria 2\n\n## Definition of Done\n- [ ] Tests written and passing\n- [ ] Code follows project patterns\n- [ ] PR created and linked" --label "simple-task"
    ```
 
-2. **Write Test Cases FIRST** (TDD):
-   - Write unit tests BEFORE implementation
-   - Run tests → should FAIL initially (RED phase)
-   - Follow TDD: RED → GREEN → REFACTOR
+2. **Write Test Cases FIRST** (TDD - RED Phase):
+   - **MANDATORY**: Write tests that FAIL before implementation
+   - Tests define what "done" means for this fix/optimization
+   - Run: `pnpm test` → expected: FAIL
 
-3. **Implement** the change following existing patterns
+3. **Implement** to make tests pass (GREEN Phase):
+   - Write minimal code to make tests pass
+   - Do NOT modify tests to match implementation
 
-4. **Run tests, lint, and build**:
+4. **Refactor** (REFACTOR Phase):
+   - Improve code without breaking tests
+   - Re-run tests to verify
+
+5. **Verify Test Coverage**:
    ```bash
    pnpm test --coverage
+   ```
+   - Bug Fix: Coverage must show the fix is tested
+   - Optimization: Must prove behavior is unchanged (same tests pass)
+
+6. **Lint and Build**:
+   ```bash
    pnpm lint
    pnpm build
    ```
 
-5. **Create PR** with clear description linking to the Issue
+7. **Create PR** linking to the Issue with test coverage report
+
+**TDD Closed Loop Enforcement**: Development and test cases are tightly coupled — tests verify implementation, implementation must pass all tests. This is a blocking gate, not optional.
 
 ### 3. Complex Task Flow
 
