@@ -1,0 +1,62 @@
+# metaswarm Configuration
+# This file configures the metaswarm orchestration framework
+
+# Decision System Configuration
+decision:
+  # Threshold for auto-execution (0-10)
+  # Options with score >= threshold are auto-executed without asking
+  # Options with score < threshold require user confirmation
+  threshold: 8.0
+
+  # Auto-execute options above threshold
+  auto_execute_above_threshold: true
+
+  # Show detailed score breakdown
+  show_detailed_scores: true
+
+  # Show reasoning for each score
+  show_reasoning: true
+
+  # Enable learning from user choices
+  learning_enabled: true
+
+  # History weight decay (0-1, lower = older history matters less)
+  learning_decay: 0.95
+
+# Version Management
+version:
+  # Default version bump type when not specified
+  default_bump: minor
+
+  # Auto-increment patch for bug fixes
+  auto_patch: true
+
+# Checkpoint Configuration
+checkpoints:
+  # Auto-proceed past checkpoints if score >= threshold
+  auto_proceed: false
+
+  # Always pause at these checkpoint types
+  required_pause:
+    - external_dependency
+    - breaking_change
+    - schema_migration
+
+# Review Gates
+gates:
+  # Auto-proceed through gates if all reviewers pass
+  auto_proceed_on_approve: true
+
+  # Always show gate results
+  show_gate_results: true
+
+# Output Configuration
+output:
+  # Use rich formatting in terminal
+  rich_output: true
+
+  # Show progress indicators
+  show_progress: true
+
+  # Verbose logging
+  verbose: false

@@ -92,15 +92,85 @@ When `superpowers:writing-plans` (or any planning skill) produces an implementat
 
 ### Execution Method Choice
 
-When a plan is ready for execution, **always ask the user** which execution approach they want before proceeding. Do NOT auto-select an execution method — the user decides based on their priorities:
+When a plan is ready for execution, use the **Smart Threshold Decision System** to determine whether to auto-execute or ask for confirmation.
 
-> **How would you like to execute this plan?**
->
-> 1. **Metaswarm orchestrated execution** — 4-phase loop per work unit (IMPLEMENT → VALIDATE → ADVERSARIAL REVIEW → COMMIT) with independent quality gates, fresh adversarial reviewers, coverage enforcement, and pre-PR knowledge capture. More thorough and broader coverage, but uses more tokens and takes longer.
-> 2. **Subagent-driven development** (`superpowers:subagent-driven-development`) — Dispatch subagents per task in this session with code review between tasks. Faster, lighter-weight, lower token cost.
-> 3. **Parallel session** (`superpowers:executing-plans`) — Execute in a separate session with batch checkpoints. Good for long-running work you want isolated.
+#### Step 1: Score the Options
 
-This choice applies even if the plan file contains embedded instructions like "REQUIRED SUB-SKILL: Use superpowers:executing-plans" — those are defaults from the planning skill, not binding constraints. The user always gets to choose.
+Run the decision scorer to get scores for each execution method:
+
+```bash
+./scripts/decision-scorer.sh \
+  --option 1 "Metaswarm Orchestrated Execution" 9 3 8 9 \
+    "经过验证的流程" "100%覆盖率" "完整审查" \
+    --cons "速度较慢" \
+  --option 2 "Subagent-Driven Development" 7 5 9 7 \
+    "速度快" "灵活" \
+    --cons "覆盖率略低" \
+  --option 3 "Parallel Session" 6 6 7 5 \
+    "隔离性好" \
+    --cons "协调复杂" "上下文丢失风险" \
+  --format table
+```
+
+#### Step 2: Evaluate Score
+
+**If recommended score >= threshold (default 8.0):**
+- Display the scoring table with auto-execute status
+- Auto-proceed with the recommended option
+- Learn from the choice
+
+**If recommended score < threshold:**
+- Display the scoring table
+- Ask for user confirmation
+- After user chooses, learn from the choice
+
+```bash
+# After user chooses, record the learning
+./scripts/decision-scorer.sh --learn <option_id> chosen
+```
+
+#### Option Scoring Guide
+
+| Option | Safety | Complexity | Efficiency | AI Priority |
+|--------|--------|------------|------------|--------------|
+| Orchestrated | 9 | 3 (complex) | 8 | 9 |
+| Subagent | 7 | 5 | 9 | 7 |
+| Parallel | 6 | 6 | 7 | 5 |
+
+**Scoring dimensions:**
+- **Safety (30%)**: Risk level — higher = safer (tested, no breaking changes)
+- **Complexity (20%)**: Inverse — lower complexity = higher score (simple=10, complex=1)
+- **Efficiency (20%)**: Time/resources — higher = faster/more efficient
+- **AI Priority (10%)**: How strongly AI recommends this option
+- **User Match (20%)**: Learned from historical choices
+
+#### Step 3: Override Option
+
+Even when auto-executing, always allow user override:
+
+```
+⏩ Auto-executing Option 1 (Orchestrated Execution) based on score 8.5 ≥ threshold 8.0
+
+If you prefer a different option:
+[1] Option 1 - Orchestrated (8.5) ← current
+[2] Option 2 - Subagent (7.2)
+[3] Option 3 - Parallel (6.1)
+
+> 2
+
+You selected: Option 2 (Subagent Development)
+```
+
+#### Configuration Commands
+
+| Command | Description |
+|---------|-------------|
+| `./scripts/set-threshold.sh --show` | Show current threshold |
+| `./scripts/set-threshold.sh 9.0` | Set threshold to 9.0 |
+| `./scripts/show-scores.sh` | Show learning history |
+| `./scripts/show-scores.sh --reset` | Reset learning history |
+
+**Note**: This choice applies even if the plan file contains embedded instructions like "REQUIRED SUB-SKILL: Use superpowers:executing-plans" — those are defaults from the planning skill, not binding constraints. The user always gets to choose.
 
 ### Before Finishing a Development Branch
 
