@@ -144,13 +144,38 @@ After Design Review Gate approves, follow this sequence before implementation:
      --description "From: <PRD-section>\nUser Story: <story>\nAcceptance Criteria: <AC>\nPriority: P0/P1"
    ```
 
-4. **Test Case Writing** — For each BEADS task, write test cases BEFORE implementation:
-   - Unit tests (what each component should do)
-   - Integration tests (how components interact)
-   - E2E tests (user flows from PRD)
-   - Document in `tests/` following project conventions
+4. **Test Case Writing** — Spawn Test Automator Agent for each BEADS task:
+   ```bash
+   # Spawn Test Automator Agent
+   Task({
+     subagent_type: "general-purpose",
+     description: "Write tests for task <task-id>",
+     prompt: `You are the TEST AUTOMATOR AGENT.
 
-5. **Planning** — After test cases are written, proceed to Architect for implementation plan
+   Read the task: bd show <task-id> --json
+   Read the PRD for requirements context
+
+   Your job:
+   1. Write unit tests FIRST (RED phase) - tests must fail before implementation
+   2. Write integration tests for component interactions
+   3. Write E2E tests for user flows (from PRD user stories)
+   4. Ensure 100% coverage (lines, branches, functions, statements)
+   5. Use shared mock factories from src/test-utils/factories/
+
+   Follow TDD: RED (write failing tests) → GREEN (implement to pass) → REFACTOR
+
+   Use Test Automator Agent definition: skills/start/agents/test-automator-agent.md
+
+   Report: Coverage report + test files created`
+   })
+   ```
+
+   Test types for each task:
+   - **Unit tests**: Each component's logic (service, utility)
+   - **Integration tests**: How components interact
+   - **E2E tests**: User flows from PRD user stories
+
+5. **Planning** — After test cases are written and passing, proceed to Architect for implementation plan
 
 **PRD is the source of truth** — all tasks, test cases, and implementation must trace back to PRD requirements.
 

@@ -148,9 +148,12 @@ After Design Review Gate approval, follow this sequence:
    bd create "Task: <feature-area>" --type task --parent <epic-id>
    ```
 
-4. **Test Case Writing** — Write test cases for each task:
-   - Unit tests, integration tests, E2E tests
-   - Before implementation (TDD)
+4. **Test Case Writing** — Spawn Test Automator Agent for each task (TDD):
+   - Write unit tests FIRST (RED phase)
+   - Write integration tests for component interactions
+   - Write E2E tests for PRD user stories
+   - Ensure 100% coverage before implementation
+   - See: skills/start/agents/test-automator-agent.md
 
 5. **Implementation Planning** — Architect creates implementation plan
 
