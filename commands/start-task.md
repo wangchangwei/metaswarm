@@ -236,24 +236,58 @@ If it's a complex task:
 
 2. Create a BEADS epic: `bd create --title "<task>" --type epic --issue <issue-number> --priority 2`
 
-3. Use the full task completion checklist
+3. **PRD Writing** — Write Product Requirements Document:
+   - Use `docs/PRD.md` template
+   - Product Vision & User Personas
+   - User Stories (P0/P1/P2 with acceptance criteria)
+   - Functional & Non-functional Requirements
+   - Metrics & Success Criteria
 
-4. Consider breaking into smaller tasks as BEADS sub-issues
+4. **PRD Review** — PM reviews the PRD:
+   - Scope clarity, measurability of success metrics
+   - Testability of user stories
+   - Iterate if needed (max 2 rounds)
 
-5. Use extended thinking for planning
+5. **Task Decomposition** — Break PRD into BEADS tasks:
+   ```bash
+   bd create "Task: <feature-area>" --type task --parent <epic-id> \
+     --description "From: <PRD-section>\nUser Story: <story>\nAcceptance Criteria: <AC>\nPriority: P0/P1"
+   ```
 
-6. Create detailed implementation plan
+6. **Test Case Writing** — Spawn Test Automator Agent for each task:
+   ```bash
+   Task({
+     subagent_type: "general-purpose",
+     description: "Write tests for task <task-id>",
+     prompt: `You are the TEST AUTOMATOR AGENT.
+
+   Write tests FIRST (RED phase) before implementation:
+   - Unit tests for each component
+   - Integration tests for component interactions
+   - E2E tests for PRD user stories
+   - Ensure 100% coverage
+
+   Use Test Automator Agent definition: skills/start/agents/test-automator-agent.md`
+   })
+   ```
+
+7. **Planning** — Architect creates implementation plan
+
+8. **Plan Review Gate** — 3 adversarial reviewers (Feasibility, Completeness, Scope & Alignment)
+
+9. **Orchestrated Execution** — 4-phase loop per work unit
+
+**PRD is the source of truth** — all tasks, test cases, and implementation must trace back to PRD requirements.
 
 #### Orchestrated Execution (for tasks with DoD items)
 
 When the task has a spec with Definition of Done items, use the orchestrated execution pattern:
 
-1. **Create implementation plan** — decompose into work units with DoD items, file scopes, dependencies
-2. **Plan Review Gate (BLOCKING)** — submit plan to adversarial review (3 reviewers: Feasibility, Completeness, Scope & Alignment must all PASS). This gate is MANDATORY — do NOT present the plan to the user or begin implementation until all 3 reviewers PASS. See `skills/plan-review-gate/SKILL.md`
-3. **Execute** the 4-phase loop per work unit: IMPLEMENT → VALIDATE → ADVERSARIAL REVIEW → COMMIT
-4. **Final review** after all work units: cross-unit integration check
-5. **Self-reflect**: Run `/self-reflect` to extract learnings, then commit knowledge base updates
-6. **Create PR** — knowledge base changes are included in the PR
+1. **Plan Review Gate (BLOCKING)** — submit plan to adversarial review (3 reviewers: Feasibility, Completeness, Scope & Alignment must all PASS). This gate is MANDATORY — do NOT present the plan to the user or begin implementation until all 3 reviewers PASS. See `skills/plan-review-gate/SKILL.md`
+2. **Execute** the 4-phase loop per work unit: IMPLEMENT → VALIDATE → ADVERSARIAL REVIEW → COMMIT
+3. **Final review** after all work units: cross-unit integration check
+4. **Self-reflect**: Run `/self-reflect` to extract learnings, then commit knowledge base updates
+5. **Create PR** — knowledge base changes are included in the PR
 
 See the `orchestrated-execution` skill for the full pattern. Key principles:
 - **Trust nothing, verify everything**: Run quality gates independently, never trust subagent self-reports
