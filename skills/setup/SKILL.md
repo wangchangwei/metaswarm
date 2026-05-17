@@ -59,6 +59,57 @@ Use Glob to check if `.metaswarm/project-profile.json` exists.
 - **If it exists**: Read it, present the current configuration summary, and ask the user via AskUserQuestion: "You already have a metaswarm project profile. Re-run setup (overwrites choices) or skip?" Options: "Re-run setup" / "Skip". If the user skips, stop with: "Setup skipped. Existing configuration unchanged."
 - **If it does not exist**: Continue to Project Detection.
 
+### GitHub/GitLab Environment Check
+
+Before proceeding, verify the Git environment is ready. Run these checks:
+
+**Check 1: Git remote configured**
+```bash
+git remote get-url origin 2>/dev/null || echo "NO_REMOTE"
+```
+
+**Check 2: GitHub CLI available**
+```bash
+command -v gh >/dev/null 2>&1 && gh --version || echo "GH_NOT_INSTALLED"
+```
+
+**Check 3: GitHub authentication**
+```bash
+gh auth status 2>&1 | head -5
+```
+
+**If NO_REMOTE:**
+> "No git remote configured. Please add a remote:
+> ```bash
+> git remote add origin <your-repo-url>
+> ```"
+
+**If GH_NOT_INSTALLED:**
+> "GitHub CLI (gh) is not installed. Install it:
+> - macOS: `brew install gh`
+> - Linux: `sudo apt install gh`
+> - Windows: `winget install GitHub.cli`
+> After installation, run `gh auth login`"
+
+**If GH_NOT_AUTHENTICATED:**
+> "GitHub CLI is not authenticated. Please login:
+> ```bash
+> gh auth login
+> ```"
+
+**If GH_NO_PERMISSION:**
+> "You don't have permission to create issues in this repository. Please check:
+> - Are you logged into the correct GitHub account? (`gh auth status`)
+> - Do you have push access to the repository?
+> - Is the repository's issue tracker enabled?"
+
+**If GitLab detected (no GitHub):**
+> "GitLab detected. GitHub-specific features (gh CLI, GitHub Actions CI) require GitHub. You can:
+> - Continue with GitLab CI (setup will prompt for GitLab CI creation)
+> - Or migrate to GitHub if preferred"
+
+**Block setup if environment is not ready** — do not proceed to project detection until the user confirms the environment is configured.
+
 ---
 
 ## Phase 1: Project Detection
