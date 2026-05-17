@@ -1,0 +1,58 @@
+# CI Pipeline — lint, typecheck, test, coverage
+# Scaffolded by metaswarm init. Customize for your project.
+
+stages:
+  - test
+
+variables:
+  NODE_VERSION: "22"
+
+cache:
+  paths:
+    - node_modules/
+
+install_dependencies:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - npm ci
+
+lint:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - npm run lint
+  needs:
+    - install_dependencies
+
+typecheck:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - npm run typecheck
+  needs:
+    - install_dependencies
+
+coverage:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - |
+      if [ -f .coverage-thresholds.json ]; then
+        CMD=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.coverage-thresholds.json','utf-8')).enforcement.command)")
+        echo "Running coverage command: $CMD"
+        read -ra CMD_ARRAY <<< "$CMD"
+        case "${CMD_ARRAY[0]}" in
+          npm|pnpm|yarn|npx|bun|cargo|pytest|go|make) ;;
+          *) echo "Error: enforcement command must start with a known package manager/runner"; exit 1 ;;
+        esac
+        if echo "$CMD" | grep -qE '[;|&`$(){}<>\\]'; then
+          echo "Error: enforcement command contains disallowed shell metacharacters"
+          exit 1
+        fi
+        "${CMD_ARRAY[@]}"
+      else
+        npm test
+      fi
+  needs:
+    - install_dependencies

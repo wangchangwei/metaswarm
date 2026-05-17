@@ -180,7 +180,46 @@ Go (`go vet`) and Rust (`cargo check`) have built-in type checking — note but 
 | `.pre-commit-config.yaml` | pre-commit |
 | `.lefthook.yml` | Lefthook |
 
-### 1.10 Present Results
+### 1.10 E2E Testing Framework Detection
+
+**Node.js/TypeScript** — Check for E2E config files and dependencies:
+
+| Marker | Framework |
+|---|---|
+| `playwright.config.*` | Playwright |
+| `@playwright/test` in devDependencies | Playwright |
+| `cypress.config.*` | Cypress |
+| `@cypress/commit` in devDependencies | Cypress |
+
+**Python** — Check for: `pytest-playwright`, `playwright`, `selenium`.
+
+**Also check directories**: Glob for `e2e/*.spec.*`, `e2e/*.test.*`, `tests/e2e/**`, `cypress/`, `playwright/`.
+
+If multiple E2E frameworks detected, prefer Playwright > Cypress > Selenium.
+
+### 1.11 Git Hosting Platform Detection
+
+**Primary detection** (file-based):
+
+| Marker | Platform |
+|---|---|
+| `.github/workflows/*.yml` | GitHub |
+| `.github/` directory with any content | GitHub |
+| `.gitlab-ci.yml` | GitLab |
+
+**Secondary detection** (git remote, if file-based is ambiguous):
+
+Run: `git remote get-url origin 2>/dev/null`
+
+| Hostname in URL | Platform |
+|---|---|
+| `github.com` | GitHub |
+| `gitlab.com` | GitLab |
+| `*gitlab*` (any self-hosted) | GitLab |
+
+If `.github/workflows/*.yml` and `.gitlab-ci.yml` both exist, report both and let the user confirm which one to use for CI setup.
+
+### 1.12 Present Results
 
 After all detection, present findings:
 
@@ -191,10 +230,12 @@ I detected the following about your project:
   Framework:       {framework or "None detected"}
   Package manager: {package_manager or "N/A"}
   Test runner:     {test_runner or "None detected"}
+  E2E framework:   {e2e_framework or "None detected"}
   Linter:          {linter or "None detected"}
   Formatter:       {formatter or "None detected"}
   Type checker:    {type_checker or "None detected"}
   CI:              {ci or "None detected"}
+  Git hosting:     {git_hosting or "None detected"}
   Git hooks:       {git_hooks or "None detected"}
 ```
 
@@ -210,13 +251,20 @@ Use AskUserQuestion to ask ONLY questions relevant based on detection. 3-5 quest
 
 **Ask only if relevant:**
 
-2. **External AI tools** — Ask only for non-trivial projects: "Set up external AI tools (Codex/Gemini) for cost savings on implementation?" Options: "Yes" / "No"
+2. **E2E testing** — Ask only if E2E framework was detected: "I detected {e2e_framework} for E2E testing. Confirm this is your E2E framework?" Options: "Yes, use {e2e_framework}" / "No, I use a different framework" / "No E2E testing"
 
-3. **Visual review** — Ask only if a web framework was detected (Next.js, Nuxt, React, Vue, Angular, SvelteKit, Django, Flask): "Enable visual screenshot review for UI changes?" Options: "Yes" / "No"
+3. **External AI tools** — Ask only for non-trivial projects: "Set up external AI tools (Codex/Gemini) for cost savings on implementation?" Options: "Yes" / "No"
 
-4. **CI pipeline** — Ask only if NO CI detected: "Create a GitHub Actions CI pipeline?" Options: "Yes (Recommended)" / "No"
+4. **Visual review** — Ask only if a web framework was detected (Next.js, Nuxt, React, Vue, Angular, SvelteKit, Django, Flask): "Enable visual screenshot review for UI changes?" Options: "Yes" / "No"
 
-5. **Git hooks** — Ask only if NO hooks detected: "Set up git hooks for pre-push quality checks?" Options: "Yes (Recommended)" / "No"
+5. **CI pipeline** — Ask only if NO CI detected. Dynamically phrase based on detected git hosting:
+   - If GitHub detected: "Create a GitHub Actions CI pipeline?" Options: "Yes (Recommended)" / "No"
+   - If GitLab detected: "Create a GitLab CI pipeline?" Options: "Yes (Recommended)" / "No"
+   - If both or ambiguous: "Which CI platform do you use?" Options: "GitHub Actions" / "GitLab CI" / "None"
+
+6. **Git hosting** — Ask only if git remote exists but no file-based indicators (`.github/` or `.gitlab-ci.yml`): "I couldn't auto-detect your git hosting platform. Which one do you use?" Options: "GitHub" / "GitLab"
+
+7. **Git hooks** — Ask only if NO hooks detected: "Set up git hooks for pre-push quality checks?" Options: "Yes (Recommended)" / "No"
 
 ---
 
@@ -293,7 +341,8 @@ Write them to `scripts/` in the project. Skip any that already exist.
 
 | Condition | Source | Destination |
 |---|---|---|
-| User chose YES for CI | `./templates/ci.yml` | `.github/workflows/ci.yml` |
+| User chose YES for CI AND GitHub | `./templates/ci.yml` | `.github/workflows/ci.yml` |
+| User chose YES for CI AND GitLab | `./templates/gitlab-ci.yml` | `.gitlab-ci.yml` |
 | User chose YES for git hooks AND Husky detected or Node.js project | `./templates/pre-push` | `.husky/pre-push` (chmod +x) |
 | User chose YES for external tools | `./templates/external-tools.yaml` | `.metaswarm/external-tools.yaml` |
 | Always | `./templates/.env.example` | `.env.example` |
@@ -318,18 +367,22 @@ Write `.metaswarm/project-profile.json` with all detection results and user choi
     "language": "{detected language}",
     "framework": "{detected framework or null}",
     "test_runner": "{detected test runner}",
+    "e2e_test_framework": "{detected E2E framework or null}",
     "linter": "{detected linter or null}",
     "formatter": "{detected formatter or null}",
     "package_manager": "{detected package manager or null}",
     "type_checker": "{detected type checker or null}",
     "ci": "{detected CI system or null}",
+    "git_hosting": "{detected git hosting platform or null}",
     "git_hooks": "{detected hook system or null}"
   },
   "choices": {
     "coverage_threshold": 100,
+    "e2e_test_framework": null,
     "external_tools": false,
     "visual_review": false,
     "ci_pipeline": false,
+    "git_hosting": null,
     "git_hooks": false
   },
   "commands": {
@@ -396,10 +449,12 @@ Setup complete! Here's what was configured:
   Language:        {language}
   Framework:       {framework or "None"}
   Test runner:     {test_runner} -> `{test command}`
+  E2E framework:   {e2e_framework or "None"}
   Coverage:        {threshold}% -> `{coverage command}`
   Linter:          {linter or "None"}
   Formatter:       {formatter or "None"}
   CI:              {ci or "None"}
+  Git hosting:     {git_hosting or "None"}
   Git hooks:       {hooks or "None"}
   External tools:  {Enabled/Disabled}
   Visual review:   {Enabled/Disabled}

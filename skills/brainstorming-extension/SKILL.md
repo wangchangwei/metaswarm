@@ -128,14 +128,33 @@ All five reviewers have approved your design!
 | Security Design | APPROVED | No high-risk threats, mitigations OK  |
 | CTO             | APPROVED | TDD specs present, ready to implement |
 
-### Next Steps
-1. Create epic for this feature
-2. Create implementation plan (writing-plans)
-3. Run plan through Plan Review Gate (3 adversarial reviewers)
-4. Set up worktree for isolated development
-5. Begin orchestrated execution
+### Next Steps: PRD Workflow
 
-Ready to proceed? [Yes / No]
+After Design Review Gate approval, follow this sequence:
+
+1. **Write PRD** — Use `docs/PRD.md` template:
+   - Product Vision & User Personas
+   - User Stories (P0/P1/P2 with acceptance criteria)
+   - Functional & Non-functional Requirements
+   - Metrics & Success Criteria
+
+2. **PRD Review** — PM reviews the PRD:
+   - Scope clarity, measurability of success metrics
+   - Testability of user stories
+   - Iterate if needed (max 2 rounds)
+
+3. **Task Decomposition** — Break PRD into BEADS tasks:
+   ```bash
+   bd create "Task: <feature-area>" --type task --parent <epic-id>
+   ```
+
+4. **Test Case Writing** — Write test cases for each task:
+   - Unit tests, integration tests, E2E tests
+   - Before implementation (TDD)
+
+5. **Implementation Planning** — Architect creates implementation plan
+
+Ready to proceed with PRD Writing? [Yes / No]
 ```
 
 **If ANY NEEDS_REVISION:**

@@ -118,10 +118,41 @@ If the issue lacks DoD items or clear scope, ask the user to clarify before proc
   1. STOP — do NOT proceed directly to `writing-plans` or implementation
   2. Run the Design Review Gate (`/review-design` or invoke the `design-review-gate` skill)
   3. Wait for all 5 review agents (PM, Architect, Designer, Security, CTO) to APPROVE
-  4. Only after ALL APPROVED, proceed to planning
-- This handoff is required even if the brainstorming skill instructs you to invoke `writing-plans` next. The design review gate catches issues before expensive implementation begins.
-- After design review approval, create a GitHub Issue from the refined design
-- The issue should contain: scope, DoD items, file scope, human checkpoints
+  4. Only after ALL APPROVED, proceed to PRD Writing
+
+**PRD Workflow (After Design Review Gate):**
+
+After Design Review Gate approves, follow this sequence before implementation:
+
+1. **PRD Writing** — Write the Product Requirements Document using `docs/PRD.md` template:
+   - Product Vision (what problem does this solve, why does it exist)
+   - User Personas (who uses it, what are their goals/pain points)
+   - User Stories (P0/P1/P2 with acceptance criteria)
+   - Requirements (functional and non-functional)
+   - Metrics & Success Criteria
+   - Timeline & Milestones
+
+2. **PRD Review** — Have PM Agent (or user as PM) review the PRD:
+   - Is the scope clear (what's in, what's out)?
+   - Are success metrics measurable?
+   - Are user stories testable?
+   - Iterate if needed (max 2 rounds)
+
+3. **Task Decomposition** — Break PRD into discrete BEADS tasks:
+   ```bash
+   bd create "PRD Task: <feature-area>" --type task --parent <epic-id> \
+     --description "From: <PRD-section>\nUser Story: <story>\nAcceptance Criteria: <AC>\nPriority: P0/P1"
+   ```
+
+4. **Test Case Writing** — For each BEADS task, write test cases BEFORE implementation:
+   - Unit tests (what each component should do)
+   - Integration tests (how components interact)
+   - E2E tests (user flows from PRD)
+   - Document in `tests/` following project conventions
+
+5. **Planning** — After test cases are written, proceed to Architect for implementation plan
+
+**PRD is the source of truth** — all tasks, test cases, and implementation must trace back to PRD requirements.
 
 **Problem Definition outputs:**
 
