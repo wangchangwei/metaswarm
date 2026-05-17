@@ -192,22 +192,45 @@ If user confirms it's a simple task:
 
 #### Essential Steps
 
-- [ ] Read relevant docs if unfamiliar with area
-- [ ] Check existing patterns for similar functionality
-- [ ] Make the change following existing patterns
-- [ ] Write/update tests if logic changes
-- [ ] Run tests, lint, and build
-- [ ] Create simple PR with clear description
+1. **Create GitHub Issue** (even for simple tasks):
+   ```bash
+   gh issue create --title "<task-title>" --body "## Task Description\n<description>\n\n## Acceptance Criteria\n- [ ] Criteria 1\n- [ ] Criteria 2\n\n## Definition of Done\n- [ ] Tests written and passing\n- [ ] Code follows project patterns\n- [ ] PR created and linked" --label "simple-task"
+   ```
+
+2. **Write Test Cases FIRST** (TDD):
+   - Write unit tests BEFORE implementation
+   - Run tests → should FAIL initially (RED phase)
+   - Follow TDD: RED → GREEN → REFACTOR
+
+3. **Implement** the change following existing patterns
+
+4. **Run tests, lint, and build**:
+   ```bash
+   pnpm test --coverage
+   pnpm lint
+   pnpm build
+   ```
+
+5. **Create PR** with clear description linking to the Issue
 
 ### 3. Complex Task Flow
 
 If it's a complex task:
 
-- Create a BEADS epic: `bd create --title "<task>" --type epic --priority 2`
-- Use the full task completion checklist
-- Consider breaking into smaller tasks as BEADS sub-issues
-- Use extended thinking for planning
-- Create detailed implementation plan
+1. **Create GitHub Issue** (required):
+   ```bash
+   gh issue create --title "<issue-title>" --body "## Problem Statement\n<description>\n\n## Definition of Done\n<DoD items>\n\n## Human Checkpoints\n<where to pause for review>" --label "complex-task"
+   ```
+
+2. Create a BEADS epic: `bd create --title "<task>" --type epic --issue <issue-number> --priority 2`
+
+3. Use the full task completion checklist
+
+4. Consider breaking into smaller tasks as BEADS sub-issues
+
+5. Use extended thinking for planning
+
+6. Create detailed implementation plan
 
 #### Orchestrated Execution (for tasks with DoD items)
 
