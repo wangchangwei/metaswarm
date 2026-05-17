@@ -393,9 +393,11 @@ Plan is ready for user review.
 - User-approved plan flows to `orchestrated-execution` for the 4-phase execution loop
 - Work unit decomposition and implementation begin
 
-### Plan Persistence
+### Plan Persistence and Document Landing
 
-After the gate approves AND the user approves the plan, persist it to BEADS so it survives context compaction:
+After the gate approves AND the user approves the plan, two things happen:
+
+#### 1. Persist to BEADS (for context recovery)
 
 ```bash
 mkdir -p .beads/plans
@@ -407,12 +409,36 @@ cat > .beads/plans/active-plan.md << 'PLAN_EOF'
 <!-- gate-iterations: <N> -->
 <!-- user-approved: true -->
 <!-- status: in-progress -->
+<!-- version: v{VERSION} -->
 
 <full approved plan text>
 PLAN_EOF
 ```
 
-This enables context recovery — if the agent loses context mid-execution, it can re-read the approved plan from disk instead of re-running the entire gate. See `orchestrated-execution` Section 6.5 for the full recovery protocol.
+#### 2. Land Document to Project Docs (for version control)
+
+```bash
+# Create versioned plan document
+mkdir -p docs/plans
+
+# Determine version number (prompt user if not specified)
+# Default: increment MINOR version
+VERSION=${1:-"$(./scripts/next-version.sh minor)"}
+
+# Write versioned plan document
+cat > "docs/plans/v${VERSION}-plan.md" << 'PLAN_EOF'
+# Implementation Plan — v{VERSION}
+<!-- created: <timestamp> -->
+<!-- plan-review-gate: PASSED -->
+<!-- gate-iterations: <N> -->
+
+<full approved plan text>
+PLAN_EOF
+
+echo "Plan landed: docs/plans/v${VERSION}-plan.md"
+```
+
+**Why this matters**: Persisting to `.beads/` enables context recovery. Landing to `docs/plans/` commits the plan to version control so it survives beyond the session and is reviewable in future PRs.
 
 ### Relationship to Design Review Gate
 

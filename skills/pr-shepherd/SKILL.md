@@ -351,6 +351,7 @@ Exit successfully when ALL are true:
 - All review threads resolved (zero unresolved)
 - No pending questions
 - PR squash-merged to main (not just "ready to merge" -- actually merged)
+- **Version documentation complete** (see Version Documentation Checklist below)
 
 Report:
 
@@ -360,9 +361,30 @@ Report:
 - CI: All checks passing
 - Reviews: All threads resolved
 - Commits: [N] total ([M] fix commits)
+- Version: [vX.Y.Z]
+- Version docs:
+  - docs/plans/v{X.Y.Z}-plan.md
+  - docs/designs/v{X.Y.Z}-design.md
+  - docs/releases/v{X.Y.Z}.md
+  - docs/releases/CHANGELOG.md
+  - docs/PRD.md (live business doc)
+  - docs/SPEC.md (live technical doc)
 
 The PR is ready for final approval and merge.
 ```
+
+#### Version Documentation Checklist (MANDATORY)
+
+Before completing, verify:
+
+- [ ] **Version number determined** — What type of change? (major/minor/patch)
+- [ ] **Plan document**: `docs/plans/v{VERSION}-plan.md` ✓/✗
+- [ ] **Design document**: `docs/designs/v{VERSION}-design.md` ✓/✗
+- [ ] **Release document**: `docs/releases/v{VERSION}.md` created ✓/✗
+- [ ] **CHANGELOG.md** updated ✓/✗
+- [ ] **All version documents committed** ✓/✗
+
+If any are missing, create them before completing.
 
 ### Post-Completion RAM Cleanup
 
@@ -410,6 +432,74 @@ if [ "$MERGED" = "true" ]; then
 fi
 ```
 
+### Version Documentation Checkpoint (MANDATORY)
+
+After PR is merged, BEFORE completing, you MUST verify version documentation:
+
+```bash
+# Check if version documents need to be created/updated
+VERSION=${1:-"$(./scripts/next-version.sh minor)"}
+
+# Prompt user for version type if not auto-detected
+echo "Version documentation for $VERSION"
+
+# Check what exists
+[ -f "docs/plans/v${VERSION#v}-plan.md" ] && echo "Plan: docs/plans/v${VERSION#v}-plan.md ✓"
+[ -f "docs/designs/v${VERSION#v}-design.md" ] && echo "Design: docs/designs/v${VERSION#v}-design.md ✓"
+[ -f "docs/releases/${VERSION#v}.md" ] && echo "Release: docs/releases/${VERSION#v}.md ✓"
+```
+
+#### Version Documentation Checklist
+
+Before declaring the PR complete, verify ALL of the following:
+
+- [ ] **Version number determined** — Ask user: "What type of change is this? (major/minor/patch)"
+- [ ] **Plan document exists** — `docs/plans/v{VERSION}-plan.md`
+  - If missing: Create from `.beads/plans/active-plan.md`
+- [ ] **Design document exists** — `docs/designs/v{VERSION}-design.md`
+  - If missing: Create from design review output
+- [ ] **Release document created** — `docs/releases/v{VERSION}.md`
+  - Run: `./scripts/create-version-doc.sh {VERSION}`
+- [ ] **CHANGELOG.md updated** — Run: `./scripts/update-changelog.sh {VERSION}`
+- [ ] **PRD.md updated** (business document) — Run: `./scripts/update-prd.sh {VERSION} --feature "Feature name"`
+  - Updates current version, adds features to user stories, updates change history
+  - **Business requirements — always update**
+- [ ] **SPEC.md updated** (technical document) — Run: `./scripts/update-spec.sh {VERSION} --feature "Feature name"`
+  - Updates current version, adds features to features table, updates recent changes
+  - **Technical specifications — always update**
+- [ ] **All version documents committed** — Include in PR or as separate commit
+
+#### Version Document Template
+
+If you need to create a version document manually:
+
+```markdown
+# Release — {VERSION}
+
+**Created**: {timestamp}
+
+## Summary
+Brief description of what this release includes.
+
+## Changes
+
+### Added
+- List of new features
+
+### Changed
+- List of changes
+
+### Fixed
+- List of bug fixes
+
+## Related Documents
+- Plan: docs/plans/v{VERSION}-plan.md
+- Design: docs/designs/v{VERSION}-design.md
+
+## Migration Notes
+Any breaking changes or migration steps.
+```
+
 **Note**: Self-reflect (`/self-reflect`) should have already run BEFORE the PR was created (see orchestrated-execution skill, section 8.5). If it was skipped, run it now as a fallback — but the preferred time is pre-PR while implementation context is freshest.
 
 ### Report to User
@@ -419,6 +509,16 @@ When creating the curation task:
 ````text
 **PR #[number] Merged Successfully**
 
+### Version Documentation
+- Version: [vX.Y.Z]
+- Plan: docs/plans/v{X.Y.Z}-plan.md
+- Design: docs/designs/v{X.Y.Z}-design.md
+- Release: docs/releases/v{X.Y.Z}.md
+- Changelog: docs/releases/CHANGELOG.md (updated)
+- PRD.md: docs/PRD.md (updated — live business doc)
+- SPEC.md: docs/SPEC.md (updated — live technical doc)
+
+### Knowledge Extraction
 Created blocking task: [CURATION_TASK_ID]
 - Title: "Curate learnings from PR #[number]"
 - Status: pending

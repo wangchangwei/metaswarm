@@ -475,6 +475,30 @@ Please choose an option or provide additional context.
 
 When design is approved:
 
+#### 1. Land Document to Project Docs (for version control)
+
+```bash
+# Create versioned design document
+mkdir -p docs/designs
+
+# Determine version number (prompt user if not specified)
+VERSION=${1:-"$(./scripts/next-version.sh minor)"}
+
+# Write versioned design document
+cat > "docs/designs/v${VERSION}-design.md" << 'DESIGN_EOF'
+# Design Document — v{VERSION}
+<!-- created: <timestamp> -->
+<!-- design-review-gate: APPROVED -->
+<!-- reviewers: PM, Architect, Designer, Security, CTO -->
+
+<full approved design text>
+DESIGN_EOF
+
+echo "Design landed: docs/designs/v${VERSION}-design.md"
+```
+
+#### 2. Create Epic for Implementation
+
 ```bash
 # Create epic linked to design doc
 # Use your project's task tracking system to create an epic and implementation phase tasks
@@ -485,6 +509,8 @@ When design is approved:
 # task-cli create "Phase 3: Frontend" --type task --parent <epic-id>
 # task-cli create "Phase 4: Polish" --type task --parent <epic-id>
 ```
+
+**Why this matters**: Landing to `docs/designs/` commits the design to version control so it survives beyond the session, is reviewable in future PRs, and provides an audit trail of approved designs.
 
 ---
 
