@@ -75,7 +75,7 @@ command -v gh >/dev/null 2>&1 && gh --version || echo "GH_NOT_INSTALLED"
 
 **Check 3: GitHub authentication**
 ```bash
-gh auth status 2>&1 | head -5
+(gh auth status 2>&1 | head -5 | grep -q "Logged in" && echo "GH_AUTH_OK") || echo "GH_NOT_AUTHENTICATED"
 ```
 
 **If NO_REMOTE:**
