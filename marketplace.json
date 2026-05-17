@@ -1,0 +1,20 @@
+{
+    "name": "metaswarm-marketplace",
+    "description": "Multi-agent orchestration framework for Claude Code, Gemini CLI, and Codex CLI — 19 agents, 13 skills, 15 commands, quality gates, TDD enforcement",
+    "owner": {
+        "name": "David Sifry",
+        "url": "https://github.com/dsifry"
+    },
+    "plugins": [
+        {
+            "name": "metaswarm",
+            "description": "Multi-agent orchestration framework — 19 agents, 13 skills, quality gates, TDD enforcement",
+            "version": "0.11.0",
+            "source": "./.claude-plugin/",
+            "author": {
+                "name": "David Sifry",
+                "url": "https://github.com/dsifry"
+            }
+        }
+    ]
+}
